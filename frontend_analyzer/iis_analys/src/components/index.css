@@ -1,0 +1,20 @@
+.centered-container-for-select-menu-on-top {
+  display: flex;
+  flex-direction: column;  /* Bileşenleri dikey hizala */
+  justify-content: center;
+  align-items: center;
+  height: auto;
+  padding-top: 20px;
+  gap: 5px;  /* Bileşenler arasında 20px boşluk bırak */
+}
+
+
+.card-kpi {
+  display: grid;  /* Flex yerine grid kullanıyoruz */
+  gap: 16px;  /* Kartlar arasındaki boşluk */
+  justify-items: right;  /* Kartları yatayda ortalar */
+  align-items: center;  /* Kartları dikeyde ortalar */
+  padding-top: 20px;
+  max-width: max-content;  /* Maksimum genişlik */
+  margin: 0 auto;  /* Sayfanın ortasında hizalama */
+}
