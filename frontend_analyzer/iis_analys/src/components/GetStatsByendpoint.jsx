@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { UserOutlined } from '@ant-design/icons';
-import { Flex, Card, Row, Col } from 'antd';
+import { Flex, Card, Row, Col, List } from 'antd';
 import './index.css';
 import axios from 'axios';
 
@@ -35,7 +35,6 @@ const options = [
 const GetStatsByendpoint = ({ index_name, endpoint }) => {
   const [endpointKpiData, setEndpointKpiData] = useState(null);
 
-  // API isteğini props'lardan alınan değerlere göre yap
   const getIndicesFromApi = async () => {
     if (index_name && endpoint) {
       try {
@@ -51,7 +50,7 @@ const GetStatsByendpoint = ({ index_name, endpoint }) => {
 
   useEffect(() => {
     getIndicesFromApi();
-  }, [index_name, endpoint]); // index_name ve endpoint değiştiğinde API isteğini tekrar yap
+  }, [index_name, endpoint]);
 
   const cardTitles = [
     'GET sayısı',
@@ -59,24 +58,23 @@ const GetStatsByendpoint = ({ index_name, endpoint }) => {
     'Client Sayısı',
     "500'lü cevap sayısı",
     "200'lü cevap sayısı",
-    'Min yanıt süresi',
-    'Max yanıt süresi',
-    'Ortalama yanıt süresi',
-    'Standart sapma yanıt süresi',
+    'Minimum yanıt süresi (ms)',
+    'Maksimum yanıt süresi (ms)',
+    'Ortalama yanıt süresi (ms)',
+    'Standart sapma yanıt süresi (ms)',
     'Yapılan istek sayısı',
     'En çok istek yapılan tarih',
-    'En çok istek yapılan datedeki max yanıt süresi',
-    'En çok istek yapılan datedeki min yanıt süresi',
-    'En çok istek yapılan datedeki ortalama yanıt süresi',
-    'En çok istek yapılan datedeki standart sapma yanıt süresi',
-    "En çok istek yapılan datedeki 500'lü cevap sayısı",
-    "En çok istek yapılan datedeki 200'lü cevap sayısı",
+    'En çok istek yapılan tarihteki max yanıt süresi (ms)',
+    'En çok istek yapılan tarihteki min yanıt süresi (ms)',
+    'En çok istek yapılan tarihteki ortalama yanıt süresi (ms)',
+    'En çok istek yapılan tarihteki standart sapma yanıt süresi (ms)',
+    "En çok istek yapılan tarihteki 500'lü cevap sayısı",
+    "En çok istek yapılan tarihteki 200'lü cevap sayısı",
     'yanıt süresi-max olan isteğin yapıldığı tarih',
-    'yanıt süresi-max olan isteğin yapıldığı zaman',
+    'yanıt süresi-max olan isteğin yapıldığı saat',
     'yanıt süresi-max olan isteğe dönülen sc-status',
     'en çok istek atan IP',
-    'Art arda verdiği 500\'lü yanıt sayısı',
-    'Art arda verdiği 500\'lü yanıtlarının başlangıç tarihi ve saati',
+    'Art arda verdiği 500\'lü yanıt sayısı'
   ];
 
   const dataKeys = [
@@ -101,8 +99,7 @@ const GetStatsByendpoint = ({ index_name, endpoint }) => {
     'max_time_taken_request_time',
     'max_time_taken_request_status',
     'most_frequent_ip',
-    'consecutive_500s_count',
-    'consecutive_500s_dates',
+    'consecutive_500s_count'
   ];
 
   return (
@@ -110,13 +107,24 @@ const GetStatsByendpoint = ({ index_name, endpoint }) => {
       <div className="card-kpi">
         <Row gutter={6}>
           {cardTitles.map((title, index) => (
-            <Col span={6} key={index}>
+            <Col span={80} key={index}>
               <Card title={title} bordered={true}>
                 <div>
                   {endpointKpiData && endpointKpiData[dataKeys[index]] !== undefined
-                    ? typeof endpointKpiData[dataKeys[index]] === 'string'
-                      ? endpointKpiData[dataKeys[index]]
-                      : endpointKpiData[dataKeys[index]]?.toString()
+                    ? dataKeys[index] === 'consecutive_500s_data' // consecutive_500s_data özel durum
+                      ? endpointKpiData[dataKeys[index]].length > 0
+                        ? <List
+                            dataSource={endpointKpiData[dataKeys[index]]}
+                            renderItem={item => (
+                              <List.Item>
+                                Başlangıç: {item.start_time}, Bitiş: {item.end_time}
+                              </List.Item>
+                            )}
+                          />
+                        : 'Art arda 500 hatası yok'
+                      : typeof endpointKpiData[dataKeys[index]] === 'string'
+                        ? endpointKpiData[dataKeys[index]]
+                        : endpointKpiData[dataKeys[index]]?.toString()
                     : 'Veri Yok'}
                 </div>
               </Card>

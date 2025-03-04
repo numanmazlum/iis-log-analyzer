@@ -14,49 +14,30 @@ const text = `
 
 //buradaki index alanı daha sonra dinamik olarak güncellenmeli
 
-const CollapseStats = () => {
+const CollapseStats = ({index_name}) => {
   const [endpointOptions, setEndpointOptions] = useState(null);
   const [selectedEndpoint, setSelectedEndpoint] = useState(null);
   const [endpointKpiData,setEndpointKpiData]=useState(null);
 
   //buradaki index değeri sonradan değiştirilmeli
-  const index="iislogs_20241019_000003_968435df"
   const items = [
     {
       key: '1',
-      label: 'Endpoint Genel İstatistik',
-      children:  <GetStatsByendpoint index_name={index} endpoint={selectedEndpoint} />,
+      label: 'Servisin Genel İstatistikleri',
+      children:  <GetStatsByendpoint index_name={localStorage.getItem('selectedIndex')} endpoint={selectedEndpoint} />,
     },
     {
       key: '2',
-      label: 'Zamansal Grafikler',
-      children: <GetTimeGraphs index_name={index} endpoint={selectedEndpoint}/>,
-    },
-    {
-      key: '3',
-      label: 'This is panel header 3',
-      children: <p>{text}</p>,
-    },
+      label: 'Servisin Zamansal Grafikleri',
+      children: <GetTimeGraphs index_name={localStorage.getItem('selectedIndex')} endpoint={selectedEndpoint}/>,
+    }
   ];
-
-  const getIndicesFromApi = async () => {
-    await axios
-      .get(
-        "http://localhost:8000/get_endpoint_stats/?index_name=iislogs_20241019_000003_968435df&endpoint=/"
-      )
-      .then((data) => {
-        setEndpointKpiData(data.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
   
   // Endpointleri getir
   const getEndpointsFromELK = async () => {
     try {
       const { data } = await axios.get(
-        "http://localhost:8000/list_endpoints/?index_name=iislogs_20241019_000003_968435df"
+        `http://localhost:8000/list_endpoints/?index_name=${index_name}`
       );
       const formattedData = data.map((endpoint) => ({
         value: endpoint,
@@ -69,8 +50,8 @@ const CollapseStats = () => {
   };
 
   useEffect(() => {
-    getIndicesFromApi();
     getEndpointsFromELK();
+    console.log(localStorage.getItem('selectedIndex'))
   }, []);
   return(
     <div>
@@ -83,7 +64,7 @@ const CollapseStats = () => {
         onSelect={(option) => setSelectedEndpoint(option)}
         size="large"
       >
-        <Input.Search size="large" placeholder="input here" />
+        <Input.Search size="large" placeholder="endpoint seçin" />
       </AutoComplete>
       </div>
        

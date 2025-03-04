@@ -52,11 +52,11 @@ const LogFileUpload = () => {
       console.log('Dosya yükleme başarılı:', uploadResponse.data);
       setUploadMessage({
         type: 'success',
-        text: `Dosya başarıyla yüklendi: ${uploadResponse.data.filename}`,
+        text: `Dosya başarıyla içe aktarıldı: ${uploadResponse.data.filename}`,
       });
 
       // Dosyayı parse et
-      setParseMessage({ type: 'info', text: 'Dosya analiz ediliyor...' });
+      setParseMessage({ type: 'info', text: 'Dosya ayrıştırılıyor..' });
       const parseResponse = await axios.post('http://localhost:8000/parse_file/', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -66,11 +66,11 @@ const LogFileUpload = () => {
       console.log('Dosya analiz başarılı:', parseResponse.data);
       setParseMessage({
         type: 'success',
-        text: `Dosya başarıyla analiz edildi: ${parseResponse.data.file_name}`,
+        text: `Dosya başarıyla ayrıştırıldı: ${parseResponse.data.file_name}`,
       });
 
       // Veriyi Elasticsearch'e kaydet
-      setSaveMessage({ type: 'info', text: 'Veri Elasticsearch\'e kaydediliyor...' });
+      setSaveMessage({ type: 'info', text: 'Veri Elasticsearch\'e kaydediliyor... (Dosya boyutuna göre bekleme süresi uzayabilir)' });
       const saveResponse = await axios.post('http://localhost:8000/save_to_es/', parseResponse.data);
 
       console.log('Veri Elasticsearch\'e kaydedildi:', saveResponse.data);

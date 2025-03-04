@@ -35,7 +35,7 @@ const GetTimeGraphs = ({ index_name, endpoint }) => {
 
   return (
     <div>
-      <Card title="Endpoint Bazında Genel Tarih-Status Code Grafiği">
+      <Card title="Servisin Tarih-Status Code Grafiği">
         <LineChart width={800} height={300} data={timeSeriesData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />
@@ -47,7 +47,7 @@ const GetTimeGraphs = ({ index_name, endpoint }) => {
         </LineChart>
       </Card>
 
-      <Card title="Endpoint Bazında Tarih-Yanıt Süreleri">
+      <Card title="Servisin Tarih-Yanıt Süreleri (ms)">
         <LineChart width={800} height={300} data={timeSeriesData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />
@@ -60,7 +60,7 @@ const GetTimeGraphs = ({ index_name, endpoint }) => {
         </LineChart>
       </Card>
 
-      <Card title="Endpoint bazında 500 Kodları">
+      <Card title="Servis 500 Kodları">
         <LineChart width={800} height={300} data={timeSeriesData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />
@@ -71,7 +71,7 @@ const GetTimeGraphs = ({ index_name, endpoint }) => {
         </LineChart>
       </Card>
 
-      <Card title="Endpoint Bazında Ort-Max Yanıt Süreleri Karşılaştırması">
+      <Card title="Servisin Ortalama-Max Yanıt Süreleri Karşılaştırması (ms)">
         <LineChart width={800} height={300} data={timeSeriesData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />

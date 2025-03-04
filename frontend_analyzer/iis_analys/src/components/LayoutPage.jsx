@@ -3,6 +3,8 @@ import { Layout, Menu } from 'antd';
 import { UploadOutlined, FileOutlined, AreaChartOutlined } from '@ant-design/icons';
 import CollapseStats from './CollapseStats'; // CollapseStats bileşenini içe aktarın
 import LogFileUpload from './LogFileUpload';
+import LogFilesHandler from './LogFilesHandler';
+import GetGeneralStatsByIndex from './GetGeneralStatsByIndex';
 
 const { Sider, Content } = Layout;
 
@@ -18,9 +20,11 @@ const LayoutPage = () => {
       case '1':
         return <div><LogFileUpload /></div>; // Log Dosyası Yükle içeriği
       case '2':
-        return <div>Log Dosyaları Listesi Sayfası</div>; // Log Dosyaları Listesi içeriği
+        return <LogFilesHandler/>; // Log Dosyaları Listesi içeriği
       case '3':
-        return <CollapseStats />; // Grafikler içeriği (CollapseStats)
+        return <CollapseStats index_name={localStorage.getItem('selectedIndex')} />; // Grafikler içeriği (CollapseStats)
+      case '4':
+        return <GetGeneralStatsByIndex index_name={localStorage.getItem('selectedIndex')} />; // Grafikler içeriği (CollapseStats)
       default:
         return <div>Log Dosyası Yükle Sayfası</div>;
     }
@@ -43,6 +47,9 @@ const LayoutPage = () => {
           </Menu.Item>
           <Menu.Item key="3" icon={<AreaChartOutlined />}>
             Grafikler
+          </Menu.Item>
+          <Menu.Item key="4" icon={<AreaChartOutlined />}>
+            Genel İstatisikler
           </Menu.Item>
         </Menu>
       </Sider>
