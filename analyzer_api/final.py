@@ -78,16 +78,16 @@ def convert_data_types(doc: dict) -> dict:
 
 
 @app.post("/upload/")
-async def upload_log(file: UploadFile = File(...)):
+async def upload_log(uploaded_file: UploadFile = File(...)):
     """
     Log dosyasını yükler.
     """
     try:
-        file_location = os.path.join(UPLOAD_DIR, file.filename)
+        file_location = os.path.join(UPLOAD_DIR, uploaded_file.filename)
         with open(file_location, "wb") as f:
-            f.write(await file.read())
+            f.write(await uploaded_file.read())
         
-        return {"filename": file.filename, "message": "File uploaded successfully"}
+        return {"filename": uploaded_file.filename, "message": "File uploaded successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -131,6 +131,56 @@ async def parse_log_file(uploaded_file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.post("/save_file_index_pair/")
+async def save_file_index(file_name: str, index_name: str):
+    """
+    Dosya adını ve index adını Elasticsearch'e kaydeder.
+    """
+    try:
+        doc = {
+            "file_name": file_name,
+            "index_name": index_name
+        }
+        es.index(index="file_index_mapping", document=doc)
+        return {"message": "Dosya ve index adları başarıyla kaydedildi."}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/get_file_index_pair/")
+async def get_indexes_by_filename(file_name: str):
+    """
+    Yüklenen dosya adına karşılık gelen index adlarını listeler.
+    """
+    try:
+        query = {
+            "query": {
+                "match": {
+                    "file_name": file_name
+                }
+            }
+        }
+        res = es.search(index="file_index_mapping", body=query)
+        indexes = [hit["_source"]["index_name"] for hit in res["hits"]["hits"]]
+        return {"indexes": indexes}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/get_all_file_index_pairs/")
+async def get_all_file_index_pairs():
+    """
+    Tüm dosya-index eşleşmelerini listeler.
+    """
+    try:
+        query = {
+            "query": {
+                "match_all": {}  # Tüm kayıtları getir
+            }
+        }
+        res = es.search(index="file_index_mapping", body=query, size=10000)  # Büyük sonuçlar için size parametresi
+        pairs = [{"file_name": hit["_source"]["file_name"], "index_name": hit["_source"]["index_name"]} for hit in res["hits"]["hits"]]
+        return {"file_index_pairs": pairs}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/save_to_es/")
 async def save_to_es(data: dict):
@@ -147,24 +197,49 @@ async def save_to_es(data: dict):
             formatted_doc = convert_data_types(doc)
             es.index(index=index_name, document=formatted_doc)
 
+        await save_file_index(file_name=data["file_name"], index_name=index_name)
         return {"message": f"Veri Elasticsearch'e başarıyla kaydedildi.", "index_name": index_name, "file_name": data["file_name"]}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@app.delete("/delete_file/")
-async def delete_file(filename: str):
+    
+@app.delete("/delete_file/{file_name}")
+async def delete_file(file_name: str):
     """
-    Yüklenen dosyayı siler.
+    Yüklenen dosyayı ve ilgili index'i siler.
     """
     try:
-        file_location = os.path.join(UPLOAD_DIR, filename)
-        if filename in os.listdir(UPLOAD_DIR):
+        # Dosya adına karşılık gelen index adlarını al
+        query = {
+            "query": {
+                "match": {
+                    "file_name": file_name
+                }
+            }
+        }
+        res = es.search(index="file_index_mapping", body=query)
+        hits = res["hits"]["hits"]
+
+        if not hits:
+            return {"message": f"{file_name} için index bulunamadı."}
+
+        index_names = [hit["_source"]["index_name"] for hit in hits]
+
+        # Index'leri sil
+        for index_name in index_names:
+            es.indices.delete(index=index_name, ignore=[400, 404])
+
+        # Dosyayı sil
+        file_location = os.path.join(UPLOAD_DIR, file_name)
+        if os.path.exists(file_location):
             os.remove(file_location)
-            return {"message": f"{filename} başarıyla silindi"}
-        else:
-            return {"message": f"Belirtilen dosya bulunamadı"}
+
+        # file_index_mapping'den kaydı sil
+        for hit in hits:
+            es.delete(index="file_index_mapping", id=hit["_id"])
+
+        return {"message": f"{file_name} ve ilgili index'ler başarıyla silindi."}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
