@@ -469,6 +469,232 @@ async def get_time_based_stats_by_endpoint(index_name: str, endpoint: str):
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.get("/get_general_stats/")
+async def get_general_stats(index_name: str):
+    elastic_queries = {
+        "error_rate_top_10": {
+            "size": 0,
+            "aggs": {
+                "endpoints": {
+                    "terms": {
+                        "field": "cs_uri_stem.keyword",
+                        "size": 10
+                    },
+                    "aggs": {
+                        "total_requests": {
+                            "value_count": {
+                                "field": "cs_uri_stem.keyword"
+                            }
+                        },
+                        "error_requests": {
+                            "filter": {
+                                "bool": {
+                                    "should": [
+                                        {
+                                            "range": {
+                                                "sc_status": {
+                                                    "gte": 400
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "range": {
+                                                "sc_status": {
+                                                    "gte": 500
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "response_time_top_20": {
+            "size": 0,
+            "aggs": {
+                "endpoints": {
+                    "terms": {
+                        "field": "cs_uri_stem.keyword",
+                        "size": 20,
+                        "order": {
+                            "avg_response_time": "desc"
+                        }
+                    },
+                    "aggs": {
+                        "avg_response_time": {
+                            "avg": {
+                                "field": "time_taken"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "most_requested_top_10": {
+            "size": 0,
+            "aggs": {
+                "endpoints": {
+                    "terms": {
+                        "field": "cs_uri_stem.keyword",
+                        "size": 10,
+                        "order": {
+                            "_count": "desc"
+                        }
+                    }
+                }
+            }
+        },
+        "error_client_ips_top_5": {
+            "size": 0,
+            "query": {
+                "bool": {
+                    "should": [
+                        {
+                            "range": {
+                                "sc_status": {
+                                    "gte": 400
+                                }
+                            }
+                        },
+                        {
+                            "range": {
+                                "sc_status": {
+                                    "gte": 500
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            "aggs": {
+                "client_ips": {
+                    "terms": {
+                        "field": "c_ip.keyword",
+                        "size": 5,
+                        "order": {
+                            "_count": "desc"
+                        }
+                    }
+                }
+            }
+        },
+        "response_time_client_ips_top_5": {
+            "size": 0,
+            "aggs": {
+                "client_ips": {
+                    "terms": {
+                        "field": "c_ip.keyword",
+                        "size": 5,
+                        "order": {
+                            "avg_response_time": "desc"
+                        }
+                    },
+                    "aggs": {
+                        "avg_response_time": {
+                            "avg": {
+                                "field": "time_taken"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "user_agents_top_10": {
+            "size": 0,
+            "aggs": {
+                "user_agents": {
+                    "terms": {
+                        "field": "cs_user_agent.keyword",
+                        "size": 10
+                    }
+                }
+            }
+        },
+        "http_methods": {
+            "size": 0,
+            "aggs": {
+                "http_methods": {
+                    "terms": {
+                        "field": "cs_method.keyword"
+                    }
+                }
+            }
+        },
+        "error_rate_over_time": {
+            "size": 0,
+            "aggs": {
+                "error_rate_over_time": {
+                    "date_histogram": {
+                        "field": "date",
+                        "calendar_interval": "1d"
+                    },
+                    "aggs": {
+                        "total_requests": {
+                            "value_count": {
+                                "field": "cs_uri_stem.keyword"
+                            }
+                        },
+                        "error_requests": {
+                            "filter": {
+                                "bool": {
+                                    "should": [
+                                        {
+                                            "range": {
+                                                "sc_status": {
+                                                    "gte": 400
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "range": {
+                                                "sc_status": {
+                                                    "gte": 500
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "response_time_distribution": {
+            "size": 0,
+            "aggs": {
+                "endpoints": {
+                    "terms": {
+                        "field": "cs_uri_stem.keyword",
+                        "size": 10
+                    },
+                    "aggs": {
+                        "response_time_stats": {
+                            "stats": {
+                                "field": "time_taken"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    results = {}
+    for key, query in elastic_queries.items():
+        json_query = json.dumps(query)
+        elastic_respond = requests.get(
+            f"{ELASTICSEARCH_URL}/{index_name}/_search?pretty",
+            headers={"Content-Type": "application/json"},
+            data=json_query
+        )
+        results[key] = elastic_respond.json()["aggregations"]
+
+    return JSONResponse(content=results)
 
 
 if __name__ == "__main__":
