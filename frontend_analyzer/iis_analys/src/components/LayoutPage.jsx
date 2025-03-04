@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Layout, Menu } from 'antd';
 import { UploadOutlined, FileOutlined, AreaChartOutlined } from '@ant-design/icons';
 import CollapseStats from './CollapseStats'; // CollapseStats bileşenini içe aktarın
+import LogFileUpload from './LogFileUpload';
 
 const { Sider, Content } = Layout;
 
@@ -15,7 +16,7 @@ const LayoutPage = () => {
   const renderContent = () => {
     switch (selectedKey) {
       case '1':
-        return <div>Log Dosyası Yükle Sayfası</div>; // Log Dosyası Yükle içeriği
+        return <div><LogFileUpload /></div>; // Log Dosyası Yükle içeriği
       case '2':
         return <div>Log Dosyaları Listesi Sayfası</div>; // Log Dosyaları Listesi içeriği
       case '3':
