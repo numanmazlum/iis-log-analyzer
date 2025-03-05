@@ -59,19 +59,19 @@ Eğer Docker kullanmak istemiyorsanız, her bir bileşeni manuel olarak kurabili
 
     **Frontend Kurulumu (React Vite):**
     
-      **React Vite Uygulamasını Başlatın:**
+     **React Vite Uygulamasını Başlatın:**
         * Frontend dizinine gidin ve aşağıdaki komutları sırayla çalıştırarak gerekli bağımlılıkları yükleyin:
     
-        ```bash
+        
         npm install
-        ```
+       
     
-    3.  **Frontend Uygulamasını Başlatın:**
+    **Frontend Uygulamasını Başlatın:**
        * Uygulamayı çalıştırmak için:
-    
-        ```bash
+         
+        
         npm run dev
-        ```
+       
 
 **Elasticsearch Kurulumu:**
 
