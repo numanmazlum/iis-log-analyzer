@@ -77,6 +77,10 @@ def convert_data_types(doc: dict) -> dict:
     return converted_doc
 
 
+@app.get("/")
+async def root():
+    return {"message": "FastAPI Çalışıyor!"}
+
 @app.post("/upload/")
 async def upload_log(uploaded_file: UploadFile = File(...)):
     """
