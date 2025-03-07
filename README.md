@@ -52,7 +52,7 @@ Eğer Docker kullanmak istemiyorsanız, her bir bileşeni manuel olarak kurabili
     * Backend uygulamasını başlatmak için terminalde şu komutu çalıştırın:
 
     ```bash
-    uvicorn app.main:app --reload
+    fastapi run final.py
     ```
 
     * Bu komut ile FastAPI sunucusu çalışmaya başlayacaktır ve `http://localhost:8000/` adresinden API'ye erişebilirsiniz.
