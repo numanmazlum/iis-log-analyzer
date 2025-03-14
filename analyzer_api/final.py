@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException , Request
 import uvicorn
 import os
 from elasticsearch import Elasticsearch
@@ -91,6 +91,10 @@ async def upload_log(uploaded_file: UploadFile = File(...)):
         return {"filename": uploaded_file.filename, "message": "File uploaded successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/test/")
+async def test_api(text: str):
+    return JSONResponse({"message": text})
 
 
 @app.post("/parse_file/")
