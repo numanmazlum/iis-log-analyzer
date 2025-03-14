@@ -79,7 +79,6 @@ def convert_data_types(doc: dict) -> dict:
 async def root():
     return {"message": "FastAPI Çalışıyor!"}
 
-@app.post("/upload/")
 async def upload_log(uploaded_file: UploadFile = File(...)):
     """
     Log dosyasını yükler.
@@ -99,6 +98,7 @@ async def parse_log_file(uploaded_file: UploadFile = File(...)):
     """
     Yüklenen log dosyasını analiz eder ve verileri çıkarır.
     """
+    upload_log(uploaded_file)
     try:
         if not uploaded_file.filename.endswith(".log"):
             raise HTTPException(status_code=400, detail="Sadece .log dosyaları desteklenmektedir.")
