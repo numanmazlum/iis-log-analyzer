@@ -12,10 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 # FastAPI uygulamasını oluştur
 app = FastAPI()
 
-allowed_origins=["http://localhost:5173"]
-
 app.add_middleware(CORSMiddleware,
-                   allow_origins=allowed_origins,
+                   allow_origins=["*"],
                    allow_credentials=True,
                    allow_methods=["*"],
                    allow_headers=["*"]
@@ -701,5 +699,5 @@ async def get_general_stats(index_name: str):
     return JSONResponse(content=results)
 
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+if __name__ == "__final__":
+    uvicorn.run(port=8000)
