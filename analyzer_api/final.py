@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # FastAPI uygulamasını oluştur
 app = FastAPI()
 
-allowed_origins=["http://localhost:5173"]
+allowed_origins=["http://localhost:5173", "http://localhost:8000"]
 
 app.add_middleware(CORSMiddleware,
                    allow_origins=allowed_origins,
