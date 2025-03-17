@@ -12,6 +12,7 @@ const LogFileUpload = () => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [indexName, setIndexName] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [testResponseMessage,setTestReponseMessage]=useState(null)
 
   const handleFileChange = (info) => {
     if (info.file.name.endsWith("log")) {
@@ -20,6 +21,24 @@ const LogFileUpload = () => {
     } else if (info.file.status === 'removed') {
       setFile(null);
       console.log('Dosya kaldırıldı.');
+    }
+  };
+
+  const handleTest = async () => {
+    try {
+      const testResponse = await axios.post(`http://localhost:8000/test/?text=merhaba`);
+  
+      console.log(testResponse);
+  
+      setTestReponseMessage({
+        type: 'success',
+        text: `İstek başarılı. ${testResponse.data.message}`,
+      });
+    } catch (error) {
+      setErrorMessage({
+        type: 'error',
+        text: `Hata oluştu: ${error.response ? JSON.stringify(error.response.data) : error.message}`,
+      });
     }
   };
 
@@ -37,23 +56,6 @@ const LogFileUpload = () => {
       const formData = new FormData();
       formData.append('uploaded_file', file);
       console.log('Yüklenen dosya:', file.name);
-
-      // Dosyayı yükle
-      const uploadResponse = await axios.post('http://localhost:8000/upload/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percentCompleted);
-        },
-      });
-
-      console.log('Dosya yükleme başarılı:', uploadResponse.data);
-      setUploadMessage({
-        type: 'success',
-        text: `Dosya başarıyla içe aktarıldı: ${uploadResponse.data.filename}`,
-      });
 
       // Dosyayı parse et
       setParseMessage({ type: 'info', text: 'Dosya ayrıştırılıyor..' });
@@ -99,6 +101,12 @@ const LogFileUpload = () => {
       <Button type="primary" onClick={handleUpload} disabled={!file || loading} style={{ marginTop: '16px' }}>
         Yükle ve Analiz Et
       </Button>
+      <div>
+        <Button type="primary" onClick={handleTest} style={{ marginTop: '16px' }}>
+          Örnek Test İsteği Gönder
+        </Button>
+      </div>
+      
 
       {loading && (
         <>
@@ -106,7 +114,9 @@ const LogFileUpload = () => {
           <Progress percent={uploadProgress} style={{ marginTop: '8px' }} />
         </>
       )}
-
+      {testResponseMessage && (
+        <Alert message={testResponseMessage.text} type={testResponseMessage.type} style={{ marginTop: '16px' }} />
+      )}
       {uploadMessage && (
         <Alert message={uploadMessage.text} type={uploadMessage.type} style={{ marginTop: '16px' }} />
       )}

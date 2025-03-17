@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException , Request
 import uvicorn
 import os
 from elasticsearch import Elasticsearch
@@ -12,10 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 # FastAPI uygulamasını oluştur
 app = FastAPI()
 
-allowed_origins=["http://localhost:5173", "http://localhost:8000"]
-
 app.add_middleware(CORSMiddleware,
-                   allow_origins=allowed_origins,
+                   allow_origins=["*"],
                    allow_credentials=True,
                    allow_methods=["*"],
                    allow_headers=["*"]
@@ -81,7 +79,6 @@ def convert_data_types(doc: dict) -> dict:
 async def root():
     return {"message": "FastAPI Çalışıyor!"}
 
-@app.post("/upload/")
 async def upload_log(uploaded_file: UploadFile = File(...)):
     """
     Log dosyasını yükler.
@@ -94,6 +91,10 @@ async def upload_log(uploaded_file: UploadFile = File(...)):
         return {"filename": uploaded_file.filename, "message": "File uploaded successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/test/")
+async def test_api(text: str):
+    return JSONResponse({"message": text})
 
 
 @app.post("/parse_file/")
@@ -101,6 +102,7 @@ async def parse_log_file(uploaded_file: UploadFile = File(...)):
     """
     Yüklenen log dosyasını analiz eder ve verileri çıkarır.
     """
+    upload_log(uploaded_file)
     try:
         if not uploaded_file.filename.endswith(".log"):
             raise HTTPException(status_code=400, detail="Sadece .log dosyaları desteklenmektedir.")
@@ -701,5 +703,5 @@ async def get_general_stats(index_name: str):
     return JSONResponse(content=results)
 
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+if __name__ == "__final__":
+    uvicorn.run(port=8000)
